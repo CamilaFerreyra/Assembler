@@ -5,8 +5,6 @@ mensaje1: .asciiz "Ingrese un numero: "
 mensaje2: .asciiz "Los numeros ingresados son: "
 espacio: .asciiz " "
 
-
-
 .text
 IngresarNumeros:
 
@@ -53,10 +51,13 @@ forMostrar:
 	
 	bne $s0, 5, forMostrar
 
+
 	jr $ra
 main:
 	jal IngresarNumeros
 	jal MostrarNumeros
+
+
 
 fin:
 	li $v0, 10
