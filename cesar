@@ -1,0 +1,102 @@
+.data 
+cadenac: .space 32
+abc: .asciiz "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+.align 3
+mensaje: .asciiz "ingrese clave: 
+"
+mensaje2: .asciiz "ingrese frase: 
+"
+frase: .space 32
+decod: .space 32
+.text
+.globl main
+main:
+    li $v0, 4
+    la $a0,mensaje
+    syscall
+                        #ingreso la clave
+    li $v0, 8
+    la $a0, cadenac
+    li $a1, 27
+    syscall
+repe:
+    li $v0, 4
+    la $a0,mensaje2
+    syscall
+                        #ingreso la frase
+    li $v0, 8
+    la $a0, frase
+    li $a1, 64
+    syscall
+
+    lb $t1, ($a0)
+    li $t2, 32
+    blt $t1,32, fin
+
+la $a1,cadenac      #recupero la clave
+
+jal cifrado
+
+ li $v0, 4
+ la $a0,frase #muestro la frase codeada
+ syscall
+
+ la $a1, cadenac #recupero la clave
+
+ la $a2,decod
+ la $a0,abc
+ jal deco
+
+ li $v0, 4
+ la $a0,decod
+ syscall
+ 
+ la $a1,decod
+ la $a0, frase
+ jal cifrado
+
+ li $v0, 4
+ la $a0,frase
+ syscall
+
+ j repe
+fin:
+li $v0, 10
+syscall
+
+cifrado:
+    move $t1,$a0   #frase
+    li $t3, 32     # por si tiene espacios
+    loop:
+        move $t2,$a1    #clave
+        lb $t0,($t1) #primer caracter de la frase
+        blt $t0, $t3, salida
+        beq $t0, $t3, eyec # si es espacio
+        subu $t0,$t0,65  #resto lo necesario para que me de la posision de la letra en el abc
+        add $t4, $t2,$t0 # me desplazo para buscar la letra en la clave
+        lb  $t4, ($t4)  #traigo la letra correspondiente de la clave
+        sb  $t4,($t1)   #guardo la letra de la clave y sobreescribo el valor de la letra en la frase
+eyec:   add $t1, $t1,1  #sigo con la otra letra de la frase
+        j loop
+
+    salida:
+    jr $ra
+
+deco:
+    move $t0,$a0 #abc
+    move $t1,$a1 #clave
+    move $t2,$a2 #deco
+    looop:
+        li $t3,32
+        lb $t4,($t1) # traigo lo el primer caracter de la clave
+        blt $t4, $t3,sali
+        subu $t4,$t4,65 # le resto para obtener la posicion en el abc
+        lb $t5, ($t0)
+        add $t3, $t2,$t4 #me desplazo en el deco
+        sb $t5, ($t3)
+        add $t1, $t1, 1
+        add $t0, $t0, 1
+        j looop
+
+sali:
+jr $ra
