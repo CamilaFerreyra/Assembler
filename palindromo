@@ -1,0 +1,105 @@
+.data
+sms: .asciiz "ingrese una palabra :"
+sies: .asciiz "Es palindromo!!!!!!!!!!!"
+noes: .asciiz "No es palindromo!!!!!!!!!!!!"
+espacio: .asciiz "
+"
+reve: .space 64
+pal:  .space 64
+
+.text
+.globl main
+main:
+
+li $v0,4
+la $a0, sms
+syscall
+
+li $v0, 8
+la $a0, pal
+li $a1, 64
+syscall
+
+jal largo
+
+la $a0, pal     #cargo la palbra como argumento
+move $a1, $v0   #corgo el largo como argumento
+la $a2, reve    #cargo el espacio para el reverso
+
+jal reverse
+la $a0, reve
+li $v0, 4
+syscall
+la $a0, espacio
+li $v0, 4
+syscall
+
+la $a0,pal
+la $a1, reve
+
+jal palindromo
+
+li $v0,10
+syscall
+
+
+largo:
+
+move $t0, $a0
+
+    loop:
+        lb $t1,($t0)
+        li $t2, 32
+        blt	$t1, $t2, salida	# if $t0 < $t1 then target
+        addi $t3, $t3, 1        #contador ++
+        add $t0, $t0, 1         #avanzo en el array
+        j loop
+salida:
+move $v0, $t3
+salid:
+jr $ra
+
+
+reverse:
+    move $t0,$a0    #palabra
+    move $t1,$a1    #largo
+    move $t2,$a2    #espacio
+    add $t2,$t2,$t1 #muevp el array hasta el final
+   looop: 
+    beq $t1,$0, salid   #me fijo si el contador es 0
+    subu $t2, $t2, 1    #me desplazo del final
+    lb $t3,($t0)        #cargo el primer caracter de la palabra
+    sb $t3,($t2)        #cargo el caracter en el final
+    add $t0, $t0,1      #me desplazo en el array
+    subu $t1, $t1, 1    #resto al contador
+   j looop
+
+palindromo:
+    move $t0,$a0    #palabra
+    move $t1,$a1    #reverso
+    li $t2, 32
+    loooop:
+    lb $t3, ($t0)   #primera letra de la palabra
+    lb $t4, ($t1)   #primera letra del reverso
+    blt	$t3, $t2, iguales    #chequeo si termino
+    bne $t3, $t4, nosoniguales #chequeo si son iguales las letras
+    add $t0, $t0, 1             #me desplazo en la palabra
+    add $t1, $t1, 1             #me desplazo en el reverso
+    j loooop
+nosoniguales:
+    la $a0,noes
+    li $v0,4
+    syscall
+    jr $ra
+iguales:
+    la $a0,sies
+    li $v0, 4 
+    syscall
+    jr $ra
+   
+
+
+
+
+
+
